@@ -17,16 +17,23 @@ func home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	files := []string{
+		"./ui/html/base.tmpl",
+		"./ui/html/pages/home.tmpl",
+		"./ui/html/partials/nav.tmpl",
+	}
+
 	// ts stands for Template Set
-	ts, err := template.ParseFiles("./ui/html/pages/home.tmpl")
+	ts, err := template.ParseFiles(files...)
 	if err != nil {
 		log.Println(err.Error())
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return
 	}
 
-	// Execute writes the output of the parsed template into the writer w
-	err = ts.Execute(w, nil)
+	// ExecuteTemplate writes the output of the parsed template into the writer w
+	// We have to specify the named template to parse and apply
+	err = ts.ExecuteTemplate(w, "base", nil)
 	if err != nil {
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return

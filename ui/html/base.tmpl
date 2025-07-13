@@ -1,0 +1,24 @@
+<!-- "base" is a named template that contains the content we want to appear on each page -->
+{{define "base"}}
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <!-- Invoke the "title" template -->
+        <!-- The . represents any dynamic data we want to pass to the invoked template -->
+        <title>{{template "title" .}}</title>
+    </head>
+    <body>
+        <header>
+            <h1><a href="/">Snippetbox</a></h1>
+        </header>
+        <!-- Invoke the "nav" template -->
+        {{template "nav" .}}
+        <main>
+            <!-- Invoke the "main" template -->
+            {{template "main" .}}
+        </main>
+        <footer>Powered by hopes and dreams</footer>
+    </body>
+</html>
+{{end}}
