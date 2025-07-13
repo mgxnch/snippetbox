@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"strconv"
@@ -15,7 +16,21 @@ func home(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	w.Write([]byte("hello world!"))
+
+	// ts stands for Template Set
+	ts, err := template.ParseFiles("./ui/html/pages/home.tmpl")
+	if err != nil {
+		log.Println(err.Error())
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	// Execute writes the output of the parsed template into the writer w
+	err = ts.Execute(w, nil)
+	if err != nil {
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+		return
+	}
 }
 
 func snippetView(w http.ResponseWriter, r *http.Request) {
@@ -37,16 +52,4 @@ func snippetCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Write([]byte("create a new snippet"))
-}
-
-func main() {
-	// Initialise mux and declare the routes
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", home)
-	mux.HandleFunc("/snippet/view", snippetView)
-	mux.HandleFunc("/snippet/create", snippetCreate)
-
-	log.Println("Starting server on http://localhost:4000")
-	err := http.ListenAndServe(":4000", mux)
-	log.Fatal(err)
 }
