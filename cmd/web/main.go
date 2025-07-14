@@ -1,11 +1,16 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"net/http"
 )
 
 func main() {
+	// Handle environment config values
+	addr := flag.String("addr", ":4000", "HTTP port")
+	flag.Parse()
+
 	// Initialise router
 	mux := http.NewServeMux()
 
@@ -22,7 +27,7 @@ func main() {
 	mux.HandleFunc("/snippet/view", snippetView)
 	mux.HandleFunc("/snippet/create", snippetCreate)
 
-	log.Println("Starting server on http://localhost:4000")
-	err := http.ListenAndServe(":4000", mux)
+	log.Printf("Starting server on http://localhost:%s", *addr)
+	err := http.ListenAndServe(*addr, mux)
 	log.Fatal(err)
 }
