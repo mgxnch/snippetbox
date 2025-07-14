@@ -7,6 +7,11 @@ import (
 	"os"
 )
 
+type application struct {
+	infoLog  *log.Logger
+	errorLog *log.Logger
+}
+
 func main() {
 	// Handle environment config values
 	addr := flag.String("addr", ":4000", "HTTP port")
@@ -15,6 +20,12 @@ func main() {
 	// Initialise loggers
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime)
+
+	// Set up application struct
+	app := application{
+		infoLog:  infoLog,
+		errorLog: errorLog,
+	}
 
 	// Initialise router
 	mux := http.NewServeMux()
@@ -28,9 +39,9 @@ func main() {
 	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
 
 	// Application routes
-	mux.HandleFunc("/", home)
-	mux.HandleFunc("/snippet/view", snippetView)
-	mux.HandleFunc("/snippet/create", snippetCreate)
+	mux.HandleFunc("/", app.home)
+	mux.HandleFunc("/snippet/view", app.snippetView)
+	mux.HandleFunc("/snippet/create", app.snippetCreate)
 
 	// Create HTTP server struct
 	srv := &http.Server{
