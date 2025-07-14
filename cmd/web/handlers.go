@@ -25,8 +25,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	// ts stands for Template Set
 	ts, err := template.ParseFiles(files...)
 	if err != nil {
-		app.errorLog.Println(err)
-		http.Error(w, "internal server error", http.StatusInternalServerError)
+		app.serverError(w, err)
 		return
 	}
 
@@ -34,8 +33,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	// We have to specify the named template to parse and apply
 	err = ts.ExecuteTemplate(w, "base", nil)
 	if err != nil {
-		app.errorLog.Println(err)
-		http.Error(w, "internal server error", http.StatusInternalServerError)
+		app.serverError(w, err)
 		return
 	}
 }
@@ -43,7 +41,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.URL.Query().Get(("id")))
 	if err != nil || id < 1 {
-		http.Error(w, "invalid id", http.StatusBadRequest)
+		app.notFound(w)
 		return
 	}
 	// Fprintf can even take in http.ResponseWriter as an io.Writer, how cool!
@@ -54,8 +52,7 @@ func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		// ref: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Allow
 		w.Header().Set("Allow", "POST")
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		w.Write([]byte("method not allowed"))
+		app.clientError(w, http.StatusMethodNotAllowed)
 		return
 	}
 	w.Write([]byte("create a new snippet"))
