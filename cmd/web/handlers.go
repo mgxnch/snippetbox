@@ -2,10 +2,9 @@ package main
 
 import (
 	"errors"
-	"fmt"
+	"html/template"
 	"net/http"
 	"strconv"
-	"text/template"
 
 	"github.com/mgxnch/snippetbox/internal/models"
 )
@@ -34,6 +33,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 
 	// ExecuteTemplate writes the output of the parsed template into the writer w
 	// We have to specify the named template to parse and apply
+	// Template names are declared in the .tmpl file in the {{define "xxx"}} block
 	err = ts.ExecuteTemplate(w, "base", nil)
 	if err != nil {
 		app.serverError(w, err)
@@ -48,6 +48,7 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Fetch the snippet by its ID
 	snippet, err := app.snippets.Get(id)
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
@@ -58,8 +59,26 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Fprintf can even take in http.ResponseWriter as an io.Writer, how cool!
-	fmt.Fprintf(w, "%+v", snippet)
+	// Set up template
+	files := []string{
+		"./ui/html/base.tmpl",
+		"./ui/html/partials/nav.tmpl",
+		"./ui/html/pages/view.tmpl", // view.tmpl contains a "main" named template
+	}
+
+	// Parse the template files
+	ts, err := template.ParseFiles(files...)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	// Pass a pointer to the templateData as the data argument to ExecuteTemplate
+	err = ts.ExecuteTemplate(w, "base", &templateData{Snippet: snippet})
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
 }
 
 func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
