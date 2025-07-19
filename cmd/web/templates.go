@@ -38,7 +38,7 @@ func newTemplateCache() (map[string]*template.Template, error) {
 		}
 
 		// Parse the files into a template
-		ts, err := template.ParseFiles(files...)
+		tmpl, err := template.ParseFiles(files...)
 		if err != nil {
 			return nil, err
 		}
@@ -47,7 +47,7 @@ func newTemplateCache() (map[string]*template.Template, error) {
 		name := filepath.Base(page)
 
 		// Set the key as name and value as the template
-		cache[name] = ts
+		cache[name] = tmpl
 	}
 
 	return cache, nil
