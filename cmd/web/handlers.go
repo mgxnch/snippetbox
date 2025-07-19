@@ -18,6 +18,13 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Fetch all snippets from DB
+	snippets, err := app.snippets.Latest()
+	if err != nil {
+		app.serverError(w, err)
+	}
+
+	// Declare files to be parsed by template.ParseFiles
 	files := []string{
 		"./ui/html/base.tmpl",
 		"./ui/html/pages/home.tmpl",
@@ -34,7 +41,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	// ExecuteTemplate writes the output of the parsed template into the writer w
 	// We have to specify the named template to parse and apply
 	// Template names are declared in the .tmpl file in the {{define "xxx"}} block
-	err = ts.ExecuteTemplate(w, "base", nil)
+	err = ts.ExecuteTemplate(w, "base", &templateData{Snippets: snippets})
 	if err != nil {
 		app.serverError(w, err)
 		return
