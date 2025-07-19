@@ -32,7 +32,7 @@ func (app *application) clientError(w http.ResponseWriter, status int) {
 // argument is the base file path of the *.tmpl files in the "ui/html/pages/" folder
 // e.g. "home.tmpl"
 func (app *application) render(w http.ResponseWriter, status int, page string, data *templateData) {
-	ts, ok := app.templateCache[page]
+	tmpl, ok := app.templateCache[page]
 	if !ok {
 		err := fmt.Errorf("the template %s does not exist", page)
 		app.serverError(w, err)
@@ -46,7 +46,7 @@ func (app *application) render(w http.ResponseWriter, status int, page string, d
 	// ExecuteTemplate writes the output of the parsed template into the writer w
 	// We have to specify the named template to parse and apply
 	// Template names are declared in the .tmpl file in the {{define "xxx"}} block
-	err := ts.ExecuteTemplate(w, "base", data)
+	err := tmpl.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		app.serverError(w, err)
 	}
