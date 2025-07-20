@@ -3,6 +3,7 @@ package main
 import (
 	"html/template"
 	"path/filepath"
+	"time"
 
 	"github.com/mgxnch/snippetbox/internal/models"
 )
@@ -11,8 +12,24 @@ import (
 // ExecuteTemplate(), allowing us to pass multiple data fields into
 // ExecuteTemplate, which only accepts a single data object in its parameters.
 type templateData struct {
-	Snippet  *models.Snippet
-	Snippets []*models.Snippet
+	CurrentYear int
+	Snippet     *models.Snippet
+	Snippets    []*models.Snippet
+}
+
+// functions acts as a lookup between the names of our custom template
+// functions and the functions. Custom template functions must only
+// return one value, or two values where the second value is an error.
+var functions = template.FuncMap{
+	"humanDate": humanDate,
+}
+
+// newTemplateData is a helper that returns a templateData struct with its
+// commonly-used fields populated with data.
+func newTemplateData() *templateData {
+	return &templateData{
+		CurrentYear: time.Now().Year(),
+	}
 }
 
 func newTemplateCache() (map[string]*template.Template, error) {
@@ -26,12 +43,16 @@ func newTemplateCache() (map[string]*template.Template, error) {
 	}
 
 	for _, page := range pages {
+		// Extract the file name (e.g. 'home.tmpl') from the full filepath
+		name := filepath.Base(page)
+
 		// Instead of passing the full list of files to teplate.ParseFiles,
-		// we can create the Template object first, then start adding more
-		// files to it
+		// we can create the Template object first, register the template
+		// functions that we want, then start adding more files to it
+		tmpl := template.New(name).Funcs(functions)
 
 		// Parse base.tmpl into a template object
-		tmpl, err := template.ParseFiles("./ui/html/base.tmpl")
+		tmpl, err := tmpl.ParseFiles("./ui/html/base.tmpl")
 		if err != nil {
 			return nil, err
 		}
@@ -49,11 +70,17 @@ func newTemplateCache() (map[string]*template.Template, error) {
 			return nil, err
 		}
 
-		// Extract the file name (e.g. 'home.tmpl') from the full filepath
 		// and use it as the map key for the parsed template
-		name := filepath.Base(page)
 		cache[name] = tmpl
 	}
 
 	return cache, nil
+}
+
+// humanDate is used as a template function which formats a time.Time
+// struct into a human-readable string.
+func humanDate(t time.Time) string {
+	// This time is Go's reference time
+	// ref: https://stackoverflow.com/questions/28087471/what-is-the-significance-of-gos-time-formatlayout-string-reference-time
+	return t.Format("02 Jan 2006 15:04")
 }

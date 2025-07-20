@@ -23,8 +23,12 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		app.serverError(w, err)
 	}
 
+	// Populate the templateData struct with data
+	data := newTemplateData()
+	data.Snippets = snippets
+
 	// Render the page
-	app.render(w, http.StatusOK, "home.tmpl", &templateData{Snippets: snippets})
+	app.render(w, http.StatusOK, "home.tmpl", data)
 }
 
 // snippetView is the function handler for viewing a specific snippet.
@@ -46,8 +50,12 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Populate the templateData struct with data
+	data := newTemplateData()
+	data.Snippet = snippet
+
 	// Render the page
-	app.render(w, http.StatusOK, "view.tmpl", &templateData{Snippet: snippet})
+	app.render(w, http.StatusOK, "view.tmpl", data)
 }
 
 func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
