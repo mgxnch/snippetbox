@@ -3,7 +3,7 @@ package main
 import "net/http"
 
 // routes sets up a ServeMux and its routes and returns the object.
-func (app *application) routes() *http.ServeMux {
+func (app *application) routes() http.Handler {
 	// Initialise router
 	mux := http.NewServeMux()
 
@@ -20,5 +20,7 @@ func (app *application) routes() *http.ServeMux {
 	mux.HandleFunc("/snippet/view", app.snippetView)
 	mux.HandleFunc("/snippet/create", app.snippetCreate)
 
-	return mux
+	// We pass mux as the next parameter to secureHeaders because
+	// we want the secureHeaders middleware to run before serveMux
+	return secureHeaders(mux)
 }
