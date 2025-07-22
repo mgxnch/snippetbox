@@ -5,18 +5,13 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/mgxnch/snippetbox/internal/models"
 )
 
 // home is the function handler for the root page. It fetches the latest 10
 // snippets and renders to the user.
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
-	// Prevent non-existent paths from matching on this handler
-	if r.URL.Path != "/" {
-		http.NotFound(w, r)
-		return
-	}
-
 	// Fetch all snippets from DB
 	snippets, err := app.snippets.Latest()
 	if err != nil {
@@ -33,7 +28,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 
 // snippetView is the function handler for viewing a specific snippet.
 func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.URL.Query().Get(("id")))
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil || id < 1 {
 		app.notFound(w)
 		return

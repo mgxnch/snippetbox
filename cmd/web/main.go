@@ -58,7 +58,7 @@ func main() {
 		ErrorLog: errorLog,
 		Handler:  app.routes(),
 	}
-	infoLog.Printf("Starting server on http://localhost:%s", *addr)
+	infoLog.Printf("Starting server on http://localhost%s", *addr)
 	err = srv.ListenAndServe()
 	errorLog.Fatal(err)
 }
