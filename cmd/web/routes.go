@@ -12,8 +12,15 @@ func (app *application) routes() http.Handler {
 	// Initialise Chi router
 	r := chi.NewRouter()
 
+	// Add custom 404 handler
+	// ref: https://go-chi.io/#/pages/routing?id=making-custom-404-and-405-handlers
+	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
+		app.notFound(w)
+	})
+
 	// Middleware chain:
 	// recoverPanic ->logRequest -> secureHeaders -> serverMux -> application handlers
+	// Chi middlewares have to be declared before routes
 	r.Use(app.recoverPanic)
 	r.Use(app.logRequest)
 	r.Use(secureHeaders)
