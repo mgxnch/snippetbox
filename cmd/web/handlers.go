@@ -54,11 +54,9 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		// ref: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Allow
-		w.Header().Set("Allow", "POST")
-		app.clientError(w, http.StatusMethodNotAllowed)
-		return
-	}
-	w.Write([]byte("create a new snippet"))
+	w.Write([]byte("display the form for creating a new snippet"))
+}
+
+func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("KIV: endpoint to add new post to the application"))
 }

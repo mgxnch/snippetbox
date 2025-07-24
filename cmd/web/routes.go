@@ -7,7 +7,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-// routes sets up a ServeMux and its routes and returns the object.
+// routes sets up a Chi router, its routes and returns the object.
 func (app *application) routes() http.Handler {
 	// Initialise Chi router
 	r := chi.NewRouter()
@@ -31,7 +31,8 @@ func (app *application) routes() http.Handler {
 	// Application routes
 	r.Get("/", app.home)
 	r.Get("/snippet/view/{id}", app.snippetView)
-	r.Post("/snippet/create", app.snippetCreate)
+	r.Get("/snippet/create", app.snippetCreate)
+	r.Post("/snippet/create", app.snippetCreatePost)
 
 	return r
 }
