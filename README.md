@@ -1,6 +1,8 @@
 # Snippetbox
 
-Building this app by reading the book.
+Snippetbox is an app that displays short snippets of 100 characters or less.
+
+This is my attempt at following through with the book `Let's Go` by Alex Edwards.
 
 ## Database
 
@@ -63,3 +65,13 @@ ALTER USER 'web'@'localhost' IDENTIFIED BY '9mfOz8RWTWQSIlgt8hX9jb9V';
 ```
 
 This user has restricted privileges and will be used by the web application.
+
+## API
+
+| Method | Pattern           | Handler           | Action                                     |
+|--------|-------------------|-------------------|--------------------------------------------|
+| GET    | /                 | home              | Display a home page                        |
+| GET    | /snippet/view/:id | snippetView       | Display a specific snippet                 |
+| GET    | /snippet/create   | snippetCreate     | Display a HTML form for creating a snippet |
+| POST   | /snippet/create   | snippetCreatePost | Create a new snippet                       |
+| GET    | /static/*         | http.FileServer   | Serve a specific static file               |
