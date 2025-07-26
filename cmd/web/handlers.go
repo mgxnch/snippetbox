@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -54,9 +55,36 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("display the form for creating a new snippet"))
+	data := newTemplateData()
+	app.render(w, http.StatusOK, "create.tmpl", data)
 }
 
 func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("KIV: endpoint to add new post to the application"))
+	err := r.ParseForm()
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	// Extract the named fields from the POST form
+	// note(mx): the r.PostForm map is populated by POST, PATCH and PUT requests only
+	title := r.PostForm.Get("title")
+	content := r.PostForm.Get("content")
+
+	// r.PostForm.Get() returns the form data as a string, hence we need to
+	// convert it
+	expires, err := strconv.Atoi(r.PostForm.Get("expires"))
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	id, err := app.snippets.Insert(title, content, expires)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	// If snippet is successfully created, redirect user to the snippetView page
+	http.Redirect(w, r, fmt.Sprintf("/snippet/view/%d", id), http.StatusSeeOther)
 }
