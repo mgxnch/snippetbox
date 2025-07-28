@@ -15,6 +15,7 @@ type templateData struct {
 	CurrentYear int
 	Snippet     *models.Snippet
 	Snippets    []*models.Snippet
+	Form        any // holds validation errors
 }
 
 // functions acts as a lookup between the names of our custom template
