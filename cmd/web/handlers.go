@@ -73,18 +73,9 @@ func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request) {
-	// r.ParseForm populates r.Form and r.PostForm. r.PostForm can be seen as a subset
-	// of r.Form, as it only contains values from POST, PUT and PATCH requests
-	err := r.ParseForm()
-	if err != nil {
-		app.clientError(w, http.StatusBadRequest)
-		return
-	}
-
-	// Use Decode to parse r.PostForm and set it into our form struct
-	// Type conversions are automatically handled for us
 	var form snippetCreateForm
-	err = app.formDecoder.Decode(&form, r.PostForm)
+
+	err := app.decodePostForm(r, &form)
 	if err != nil {
 		app.clientError(w, http.StatusBadRequest)
 		return

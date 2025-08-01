@@ -2,9 +2,12 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"net/http"
 	"runtime/debug"
+
+	"github.com/go-playground/form/v4"
 )
 
 // serverError is a helper to print the error stack trace and return HTTP 500 to the user.
@@ -53,4 +56,31 @@ func (app *application) render(w http.ResponseWriter, status int, page string, d
 	// set this to 200 OK by default
 	w.WriteHeader(status)
 	buf.WriteTo(w)
+}
+
+// decodePostForm is a helper to to extract the request's form fields by using
+// a form decoder. If the form is well-formed, its values are set into dst. dst
+// is expected to be a pointer to a struct that can hold the form values.
+func (app *application) decodePostForm(r *http.Request, dst any) error {
+	// r.ParseForm populates r.Form and r.PostForm. r.PostForm can be seen as a subset
+	// of r.Form, as it only contains values from POST, PUT and PATCH requests
+	err := r.ParseForm()
+	if err != nil {
+		return err
+	}
+
+	// Use Decode to parse r.PostForm and set it into our form struct
+	// Type conversions are automatically handled for us
+	err = app.formDecoder.Decode(dst, r.PostForm)
+	if err != nil {
+		// InvalidDecoderError is raised when a nil pointer is passed to Decode
+		var invalidDecoderError *form.InvalidDecoderError
+		if errors.As(err, &invalidDecoderError) {
+			panic(err)
+		}
+
+		// For all other errors, we return them as normal
+		return err
+	}
+	return nil
 }
