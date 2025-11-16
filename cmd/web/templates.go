@@ -26,14 +26,6 @@ var functions = template.FuncMap{
 	"humanDate": humanDate,
 }
 
-// newTemplateData is a helper that returns a templateData struct with its
-// commonly-used fields populated with data.
-func newTemplateData() *templateData {
-	return &templateData{
-		CurrentYear: time.Now().Year(),
-	}
-}
-
 func newTemplateCache() (map[string]*template.Template, error) {
 	// Init the map
 	cache := map[string]*template.Template{}

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/mgxnch/snippetbox/internal/models"
@@ -21,7 +22,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Populate the templateData struct with data
-	data := newTemplateData()
+	data := app.newTemplateData(r)
 	data.Snippets = snippets
 
 	// Render the page
@@ -47,13 +48,9 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Reads and removes the 'flash' key from sessionManager
-	flash := app.sessionManager.PopString(r.Context(), "flash")
-
 	// Populate the templateData struct with data
-	data := newTemplateData()
+	data := app.newTemplateData(r)
 	data.Snippet = snippet
-	data.Flash = flash
 
 	// Render the page
 	app.render(w, http.StatusOK, "view.tmpl", data)
@@ -69,7 +66,7 @@ type snippetCreateForm struct {
 }
 
 func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
-	data := newTemplateData()
+	data := app.newTemplateData(r)
 	data.Form = snippetCreateForm{
 		Expires: 365,
 	}
@@ -94,7 +91,7 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 
 	// If there are any validation errors, re-render the create.tmpl template
 	if !form.Valid() {
-		data := newTemplateData()
+		data := app.newTemplateData(r)
 		data.Form = form
 		app.render(w, http.StatusUnprocessableEntity, "create.tmpl", data)
 		return
@@ -111,4 +108,12 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 
 	// If snippet is successfully created, redirect user to the snippetView page
 	http.Redirect(w, r, fmt.Sprintf("/snippet/view/%d", id), http.StatusSeeOther)
+}
+
+// newTemplateData returns a templateData struct with its commonly-used fields populated with data.
+func (app *application) newTemplateData(r *http.Request) *templateData {
+	return &templateData{
+		CurrentYear: time.Now().Year(),
+		Flash:       app.sessionManager.PopString(r.Context(), "flash"),
+	}
 }
