@@ -35,11 +35,16 @@ func (app *application) routes() http.Handler {
 	// becomes "img/logo.png" which is a valid path to the fileServer
 	r.Handle("/static/*", http.StripPrefix("/static", fileServer)) // http.StripPrefix returns a handler
 
-	// Application routes
-	r.Get("/", app.home)
-	r.Get("/snippet/view/{id}", app.snippetView)
-	r.Get("/snippet/create", app.snippetCreate)
-	r.Post("/snippet/create", app.snippetCreatePost)
+	// Application routes that use the Session Manager
+	// We use r.Group if not Chi will complain that we declare middleware
+	// after routes
+	r.Group(func(r chi.Router) {
+		r.Use(app.sessionManager.LoadAndSave)
+		r.Get("/", app.home)
+		r.Get("/snippet/view/{id}", app.snippetView)
+		r.Get("/snippet/create", app.snippetCreate)
+		r.Post("/snippet/create", app.snippetCreatePost)
+	})
 
 	return r
 }

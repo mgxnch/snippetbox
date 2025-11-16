@@ -25,7 +25,6 @@ var ErrNoRecord = errors.New("models: no matching record found")
 
 // Insert inserts the snippet into the database.
 func (m *SnippetModel) Insert(title, content string, expires int) (int, error) {
-	// Prepared statement
 	stmt := `INSERT INTO snippets (title, content, created, expires)
 	VALUES(?, ?, UTC_TIMESTAMP(), DATE_ADD(UTC_TIMESTAMP(), INTERVAL ? DAY))`
 

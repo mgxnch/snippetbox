@@ -4,6 +4,15 @@ Snippetbox is an app that displays short snippets of 100 characters or less.
 
 This is my attempt at following through with the book `Let's Go` by Alex Edwards.
 
+## Starting the service
+
+```bash
+air
+```
+
+I've added `air` to the project to watch my files, rebuild and serve when there
+are changes.
+
 ## Database
 
 ### Setup
@@ -65,6 +74,12 @@ ALTER USER 'web'@'localhost' IDENTIFIED BY '9mfOz8RWTWQSIlgt8hX9jb9V';
 ```
 
 This user has restricted privileges and will be used by the web application.
+
+## Setting up sessions table
+
+```bash
+mysql -u root snippetbox < sql/sessions.sql
+```
 
 ## API
 
