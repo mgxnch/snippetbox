@@ -18,6 +18,10 @@
         <!-- Invoke the "nav" template which is defined in ui/html/partials/nav.tmpl -->
         {{template "nav" .}}
         <main>
+            <!-- Display the flash message if one exists -->
+             {{with .Flash}}
+                <div class="flash">{{.}}</div>
+             {{end}}
             <!-- Invoke the "main" template which we will define in each .tmpl
              file that is in the ui/html/pages directory -->
             {{template "main" .}}
