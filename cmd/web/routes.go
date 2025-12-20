@@ -36,8 +36,8 @@ func (app *application) routes() http.Handler {
 	r.Handle("/static/*", http.StripPrefix("/static", fileServer)) // http.StripPrefix returns a handler
 
 	// Application routes that use the Session Manager
-	// We use r.Group if not Chi will complain that we declare middleware
-	// after routes
+	// We use r.Group if not Chi will complain that we are declaring middleware
+	// components after routes. Chi only allows you to declare middleware BEFORE routes.
 	r.Group(func(r chi.Router) {
 		r.Use(app.sessionManager.LoadAndSave)
 		r.Get("/", app.home)

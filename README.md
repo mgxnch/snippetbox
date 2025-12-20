@@ -13,6 +13,10 @@ air
 I've added `air` to the project to watch my files, rebuild and serve when there
 are changes.
 
+## TLS
+
+Copy the `./tls/*.pem` files to `./tmp/tls`, because that's how I've set up `air`.
+
 ## Database
 
 ### Setup

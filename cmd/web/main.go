@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"database/sql"
 	"flag"
 	"html/template"
@@ -68,14 +69,22 @@ func main() {
 		sessionManager: sessionManager,
 	}
 
+	// Set up non-default TLS settings. We are using these two with assembly implementations
+	// which should in theory be much faster. tls.Config supports other preferences too,
+	// such as CipherSuites, but we are not setting that for now.
+	tlsConfig := &tls.Config{
+		CurvePreferences: []tls.CurveID{tls.X25519, tls.CurveP256},
+	}
+
 	// Create HTTP server struct
 	srv := &http.Server{
-		Addr:     *addr,
-		ErrorLog: errorLog,
-		Handler:  app.routes(),
+		Addr:      *addr,
+		ErrorLog:  errorLog,
+		Handler:   app.routes(),
+		TLSConfig: tlsConfig,
 	}
 	infoLog.Printf("Starting server on http://localhost%s", *addr)
-	err = srv.ListenAndServe()
+	err = srv.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem")
 	errorLog.Fatal(err)
 }
 
