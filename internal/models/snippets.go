@@ -20,9 +20,6 @@ type SnippetModel struct {
 	DB *sql.DB
 }
 
-// Custom errors
-var ErrNoRecord = errors.New("models: no matching record found")
-
 // Insert inserts the snippet into the database.
 func (m *SnippetModel) Insert(title, content string, expires int) (int, error) {
 	stmt := `INSERT INTO snippets (title, content, created, expires)

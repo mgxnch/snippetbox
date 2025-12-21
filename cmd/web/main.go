@@ -21,6 +21,7 @@ type application struct {
 	infoLog        *log.Logger
 	errorLog       *log.Logger
 	snippets       *models.SnippetModel
+	users          *models.UserModel
 	templateCache  map[string]*template.Template
 	formDecoder    *form.Decoder // for validating form fields
 	sessionManager *scs.SessionManager
@@ -64,6 +65,9 @@ func main() {
 		snippets: &models.SnippetModel{
 			DB: db,
 		},
+		users: &models.UserModel{
+			DB: db,
+		},
 		templateCache:  templateCache,
 		formDecoder:    formDecoder,
 		sessionManager: sessionManager,
@@ -91,6 +95,7 @@ func main() {
 	errorLog.Fatal(err)
 }
 
+// openDB opens a connection to the database and verifies that a connection can be established.
 func openDB(dsn string) (*sql.DB, error) {
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
