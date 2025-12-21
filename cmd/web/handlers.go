@@ -110,6 +110,26 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 	http.Redirect(w, r, fmt.Sprintf("/snippet/view/%d", id), http.StatusSeeOther)
 }
 
+func (app *application) userSignup(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "display HTML form to sign up")
+}
+
+func (app *application) userSignupPost(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "create a new user")
+}
+
+func (app *application) userLogin(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "display HTML form to log in")
+}
+
+func (app *application) userLoginPost(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "log in user")
+}
+
+func (app *application) userLogoutPost(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "log out user")
+}
+
 // newTemplateData returns a templateData struct with its commonly-used fields populated with data.
 func (app *application) newTemplateData(r *http.Request) *templateData {
 	return &templateData{
