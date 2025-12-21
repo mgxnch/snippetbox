@@ -32,7 +32,8 @@ func (app *application) clientError(w http.ResponseWriter, status int) {
 	http.Error(w, http.StatusText(status), status)
 }
 
-// render is a helper to render a HTML page and return it to the client.
+// render writes a HTML template with a name of page to w.
+//
 // page is the base file path of the *.tmpl files in the "ui/html/pages/" folder
 // e.g. "home.tmpl"
 func (app *application) render(w http.ResponseWriter, status int, page string, data *templateData) {

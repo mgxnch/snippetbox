@@ -12,6 +12,14 @@ import (
 	"github.com/mgxnch/snippetbox/internal/validator"
 )
 
+// userSignupForm holds the information when a user signs up.
+type userSignupForm struct {
+	Name                string `form:"name"`
+	Email               string `form:"email"`
+	Password            string `form:"password"`
+	validator.Validator `form:"-"`
+}
+
 // home is the function handler for the root page. It fetches the latest 10
 // snippets and renders to the user.
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
@@ -111,11 +119,38 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 }
 
 func (app *application) userSignup(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "display HTML form to sign up")
+	data := app.newTemplateData(r)
+	data.Form = userSignupForm{}
+	app.render(w, http.StatusOK, "signup.tmpl", data)
 }
 
 func (app *application) userSignupPost(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "create a new user")
+	var form userSignupForm
+
+	// Read submitted form fields
+	err := app.decodePostForm(r, &form)
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	// Validation
+	form.CheckField(validator.NotBlank(form.Name), "name", "This field cannot be blank")
+	form.CheckField(validator.NotBlank(form.Email), "email", "This field cannot be blank")
+	form.CheckField(validator.Matches(form.Email, validator.EmailRegex), "email", "This field must be a valid email address")
+	form.CheckField(validator.NotBlank(form.Password), "password", "This field cannot be blank")
+	form.CheckField(validator.MinChars(form.Password, 8), "password", "This field must contain at least 8 characters")
+
+	// If error, return 422
+	if !form.Valid() {
+		data := app.newTemplateData(r)
+		data.Form = form
+		app.render(w, http.StatusUnprocessableEntity, "signup.tmpl", data)
+		return
+	}
+
+	// Create user
+	fmt.Fprintln(w, "valid user")
 }
 
 func (app *application) userLogin(w http.ResponseWriter, r *http.Request) {
