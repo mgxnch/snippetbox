@@ -9,13 +9,15 @@ import (
 
 var EmailRegex = regexp.MustCompile(`^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$`)
 
+// Validator is a struct for implementing validation logic and holding validation error strings.
 type Validator struct {
-	FieldErrors map[string]string
+	NonFieldErrors []string          // validation errors not related to a specific form field e.g. login failure
+	FieldErrors    map[string]string // validation errors related to a specific form field, where form field name is key
 }
 
 // Valid returns true if FieldErrors does not contain any entries.
 func (v *Validator) Valid() bool {
-	return len(v.FieldErrors) == 0
+	return len(v.FieldErrors) == 0 && len(v.NonFieldErrors) == 0
 }
 
 // CheckField adds an error message to the FieldErrors map only if a
@@ -36,6 +38,11 @@ func (v *Validator) AddFieldError(key, message string) {
 	if _, exists := v.FieldErrors[key]; !exists {
 		v.FieldErrors[key] = message
 	}
+}
+
+// AddNonFieldError appends message to NonFieldErrors.
+func (v *Validator) AddNonFieldError(message string) {
+	v.NonFieldErrors = append(v.NonFieldErrors, message)
 }
 
 // NotBlank returns true if the value is not an empty string after

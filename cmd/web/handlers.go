@@ -20,6 +20,13 @@ type userSignupForm struct {
 	validator.Validator `form:"-"`
 }
 
+// userLoginForm holds the information when a user signs in.
+type userLoginForm struct {
+	Email               string `form:"email"`
+	Password            string `form:"password"`
+	validator.Validator `form:"-"`
+}
+
 // home is the function handler for the root page. It fetches the latest 10
 // snippets and renders to the user.
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
@@ -170,11 +177,65 @@ func (app *application) userSignupPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) userLogin(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "display HTML form to log in")
+	data := app.newTemplateData(r)
+	data.Form = userLoginForm{}
+	app.render(w, http.StatusOK, "login.tmpl", data)
 }
 
 func (app *application) userLoginPost(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "log in user")
+	var form userLoginForm
+
+	// Read submitted form fields
+	err := app.decodePostForm(r, &form)
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	// Validation
+	form.CheckField(validator.NotBlank(form.Email), "email", "This field cannot be blank")
+	form.CheckField(validator.Matches(form.Email, validator.EmailRegex), "email", "This field must be a valid email address")
+	form.CheckField(validator.NotBlank(form.Password), "password", "This field cannot be blank")
+
+	// If form field values fail semantic validation, return 422
+	if !form.Valid() {
+		data := app.newTemplateData(r)
+		data.Form = form
+		app.render(w, http.StatusUnprocessableEntity, "login.tmpl", data)
+		return
+	}
+
+	// Return an error if the user cannot be authenticated
+	id, err := app.users.Authenticate(form.Email, form.Password)
+	if err != nil {
+		if errors.Is(err, models.ErrInvalidCredentials) {
+			form.AddNonFieldError("Email or password is incorrect")
+
+			data := app.newTemplateData(r)
+			data.Form = form
+			app.render(w, http.StatusUnprocessableEntity, "login.tmpl", data)
+			return
+		}
+
+		app.serverError(w, err)
+		return
+	}
+
+	// Call RenewToken on the current session to change the session ID. It is a good
+	// practice to generate a new session ID when the authentication state or privilege
+	// levels changes for a user (e.g. login and logout operations)
+	err = app.sessionManager.RenewToken(r.Context())
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	// Add the ID of the current user to the session, so that they are now considered
+	// logged in.
+	app.sessionManager.Put(r.Context(), "authenticatedUserID", id)
+
+	// Redirect user to the create snippet page
+	http.Redirect(w, r, "/snippet/create", http.StatusSeeOther)
 }
 
 func (app *application) userLogoutPost(w http.ResponseWriter, r *http.Request) {

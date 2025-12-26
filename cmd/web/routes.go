@@ -41,6 +41,8 @@ func (app *application) routes() http.Handler {
 	r.Group(func(r chi.Router) {
 		// Add the middleware for this group
 		r.Use(app.sessionManager.LoadAndSave)
+
+		// Add the handlers for this group
 		r.Get("/", app.home)
 		r.Get("/snippet/view/{id}", app.snippetView)
 		r.Get("/snippet/create", app.snippetCreate)
