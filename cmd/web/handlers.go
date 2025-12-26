@@ -34,6 +34,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	snippets, err := app.snippets.Latest()
 	if err != nil {
 		app.serverError(w, err)
+		return
 	}
 
 	// Populate the templateData struct with data
@@ -167,6 +168,7 @@ func (app *application) userSignupPost(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		app.serverError(w, err)
+		return
 	}
 
 	// Let user know that signup was successful
