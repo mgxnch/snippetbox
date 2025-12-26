@@ -144,13 +144,29 @@ func (app *application) userSignupPost(w http.ResponseWriter, r *http.Request) {
 	// If error, return 422
 	if !form.Valid() {
 		data := app.newTemplateData(r)
-		data.Form = form
+		data.Form = form // so that the fields filled in on the failed request still show up on the page, user doesn't need to rewrite
 		app.render(w, http.StatusUnprocessableEntity, "signup.tmpl", data)
 		return
 	}
 
-	// Create user
-	fmt.Fprintln(w, "valid user")
+	// Create user in DB
+	err = app.users.Insert(form.Name, form.Email, form.Password)
+	if err != nil {
+		if errors.Is(err, models.ErrDuplicateEmail) {
+			form.AddFieldError("email", "Email address is already in use")
+			data := app.newTemplateData(r)
+			data.Form = form
+			app.render(w, http.StatusUnprocessableEntity, "signup.tmpl", data)
+			return
+		}
+		app.serverError(w, err)
+	}
+
+	// Let user know that signup was successful
+	app.sessionManager.Put(r.Context(), "flash", "Your signup was successful. Please log in.")
+
+	// Redirect user to login page
+	http.Redirect(w, r, "/user/login", http.StatusSeeOther)
 }
 
 func (app *application) userLogin(w http.ResponseWriter, r *http.Request) {

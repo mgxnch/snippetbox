@@ -2,7 +2,12 @@ package models
 
 import (
 	"database/sql"
+	"errors"
+	"strings"
 	"time"
+
+	"github.com/go-sql-driver/mysql"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // User hold the data from the users table.
@@ -19,8 +24,32 @@ type UserModel struct {
 	DB *sql.DB
 }
 
-// Insert inserts a user into the database.
+// Insert inserts a user into the database. It checks that the email is unique and that
+// the password can be converted into a valid bcrypt hash.
 func (m *UserModel) Insert(name, email, password string) error {
+	// Create bcrupt hash of plaintext password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 12) // 2^12 = 4096 iterations
+	if err != nil {
+		return err
+	}
+
+	stmt := `INSERT INTO users (name, email, hashed_password, created)
+	VALUES (?, ?, ?, UTC_TIMESTAMP())`
+
+	// Use Exec() method to insert user into users table
+	_, err = m.DB.Exec(stmt, name, email, string(hashedPassword))
+	if err != nil {
+		// We need to already know that MySQL returns error number 1062 (ER_DUP_ENTRY) when
+		// the unique key constraint is violated
+		var mySQLError *mysql.MySQLError
+		if errors.As(err, &mySQLError) {
+			// "users_uc_email" is our constraint name
+			if mySQLError.Number == 1062 && strings.Contains(mySQLError.Message, "users_uc_email") {
+				return ErrDuplicateEmail
+			}
+		}
+		return err
+	}
 	return nil
 }
 

@@ -36,6 +36,8 @@ func (app *application) clientError(w http.ResponseWriter, status int) {
 //
 // page is the base file path of the *.tmpl files in the "ui/html/pages/" folder
 // e.g. "home.tmpl"
+//
+// Note: render only writes to w and is not responsible for returning a page to the user.
 func (app *application) render(w http.ResponseWriter, status int, page string, data *templateData) {
 	tmpl, ok := app.templateCache[page]
 	if !ok {
