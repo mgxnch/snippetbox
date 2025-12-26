@@ -12,6 +12,10 @@ import (
 	"github.com/mgxnch/snippetbox/internal/validator"
 )
 
+const (
+	authUserKey = "authenticatedUserID" // key used for an authenticated user in Session Manager
+)
+
 // userSignupForm holds the information when a user signs up.
 type userSignupForm struct {
 	Name                string `form:"name"`
@@ -234,14 +238,28 @@ func (app *application) userLoginPost(w http.ResponseWriter, r *http.Request) {
 
 	// Add the ID of the current user to the session, so that they are now considered
 	// logged in.
-	app.sessionManager.Put(r.Context(), "authenticatedUserID", id)
+	app.sessionManager.Put(r.Context(), authUserKey, id)
 
 	// Redirect user to the create snippet page
 	http.Redirect(w, r, "/snippet/create", http.StatusSeeOther)
 }
 
 func (app *application) userLogoutPost(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "log out user")
+	err := app.sessionManager.RenewToken(r.Context())
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	// Remove key-value of the authenticated uesr
+	app.sessionManager.Remove(r.Context(), authUserKey)
+
+	// Inform user
+	app.sessionManager.Put(r.Context(), "flash", "You've been logged out successfully")
+
+	// Redirect user to home page
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+
 }
 
 // newTemplateData returns a templateData struct with its commonly-used fields populated with data.
