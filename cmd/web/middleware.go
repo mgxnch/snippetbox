@@ -20,3 +20,21 @@ func secureHeaders(next http.Handler) http.Handler {
 		// you include them after the next.ServeHTTP call
 	})
 }
+
+// requireAuthentication is a middleware that checks if a user is allowed to
+// access a certain page.
+func (app *application) requireAuthentication(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !app.isAuthenticated(r) {
+			http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+			return
+		}
+
+		// So that pages that require authentication are not stored in the user's
+		// browser cache, or other intermediary caches
+		w.Header().Add("Cache-Control", "no-store")
+
+		// Call next handler in the chain
+		next.ServeHTTP(w, r)
+	})
+}

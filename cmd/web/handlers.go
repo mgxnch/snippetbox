@@ -265,7 +265,8 @@ func (app *application) userLogoutPost(w http.ResponseWriter, r *http.Request) {
 // newTemplateData returns a templateData struct with its commonly-used fields populated with data.
 func (app *application) newTemplateData(r *http.Request) *templateData {
 	return &templateData{
-		CurrentYear: time.Now().Year(),
-		Flash:       app.sessionManager.PopString(r.Context(), "flash"),
+		CurrentYear:     time.Now().Year(),
+		Flash:           app.sessionManager.PopString(r.Context(), "flash"),
+		IsAuthenticated: app.isAuthenticated(r),
 	}
 }

@@ -12,11 +12,12 @@ import (
 // ExecuteTemplate(), allowing us to pass multiple data fields into
 // ExecuteTemplate, which only accepts a single data object in its parameters.
 type templateData struct {
-	CurrentYear int
-	Snippet     *models.Snippet
-	Snippets    []*models.Snippet
-	Form        any    // holds validation errors
-	Flash       string // holds the flash message
+	CurrentYear     int
+	Snippet         *models.Snippet
+	Snippets        []*models.Snippet
+	Form            any    // holds validation errors
+	Flash           string // holds the flash message
+	IsAuthenticated bool   // true if user is authenticated, false otherwise
 }
 
 // functions acts as a lookup between the names of our custom template
