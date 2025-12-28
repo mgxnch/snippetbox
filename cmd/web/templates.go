@@ -2,10 +2,12 @@ package main
 
 import (
 	"html/template"
+	"io/fs"
 	"path/filepath"
 	"time"
 
 	"github.com/mgxnch/snippetbox/internal/models"
+	"github.com/mgxnch/snippetbox/ui"
 )
 
 // templateData is a holding struct for data that needs to be passed to
@@ -32,8 +34,8 @@ func newTemplateCache() (map[string]*template.Template, error) {
 	// Init the map
 	cache := map[string]*template.Template{}
 
-	// filepath.Glob returns a slice of filepath strings that match the pattern
-	pages, err := filepath.Glob("./ui/html/pages/*.tmpl")
+	// fs.Glob returns a slice of filepath strings that match the pattern
+	pages, err := fs.Glob(ui.Files, "html/pages/*.tmpl")
 	if err != nil {
 		return nil, err
 	}
@@ -42,31 +44,23 @@ func newTemplateCache() (map[string]*template.Template, error) {
 		// Extract the file name (e.g. 'home.tmpl') from the full filepath
 		name := filepath.Base(page)
 
-		// Instead of passing the full list of files to teplate.ParseFiles,
-		// we can create the Template object first, register the template
-		// functions that we want, then start adding more files to it
-		tmpl := template.New(name).Funcs(functions)
+		// Define a slice of filepath patterns for the templates that
+		// we want to parse. Each of the .tmpl files in ui/html/pages require
+		// base.tmpl and all of the partials' .tmpl files.
+		patterns := []string{
+			"html/base.tmpl",
+			"html/partials/*.tmpl",
+			page,
+		}
 
-		// Parse base.tmpl into a template object
-		tmpl, err := tmpl.ParseFiles("./ui/html/base.tmpl")
+		// ParseFS is a variadic function, which allows us to parse multiple templates in a single
+		// call. We no longer have to split between ParseFiles and ParseGlob.
+		tmpl, err := template.New(name).Funcs(functions).ParseFS(ui.Files, patterns...)
 		if err != nil {
 			return nil, err
 		}
 
-		// Add partials to the template
-		// note(mx): we are calling Parse[Glob|Files] on our Template object
-		tmpl, err = tmpl.ParseGlob("./ui/html/partials/*.tmpl")
-		if err != nil {
-			return nil, err
-		}
-
-		// Add the current page into the template
-		tmpl, err = tmpl.ParseFiles(page)
-		if err != nil {
-			return nil, err
-		}
-
-		// and use it as the map key for the parsed template
+		// Use the base file name as map key for the parsed template
 		cache[name] = tmpl
 	}
 
