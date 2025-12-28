@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/mgxnch/snippetbox/ui"
 )
 
 // routes sets up a Chi router, its routes and returns the object.
@@ -26,14 +27,13 @@ func (app *application) routes() http.Handler {
 	r.Use(secureHeaders)
 
 	// File server and its route
-	// http.FileServer serves file out of its input directory
-	// "." refers the current working directory, i.e. the directory
-	// where you're running the binary from, and NOT where the Go binary resides on disk
-	fileServer := http.FileServer(http.Dir("./ui/static"))
+	// Convert ui.Files from an embedded filesystem to the http.FS type, so that
+	// it satisfies the http.FileSystem type required of the argument to http.FileServer.
+	fileServer := http.FileServer(http.FS(ui.Files))
 
-	// Strip away /static from the incoming request e.g. GET localhost:4000/static/img/logo.png
-	// becomes "img/logo.png" which is a valid path to the fileServer
-	r.Handle("/static/*", http.StripPrefix("/static", fileServer)) // http.StripPrefix returns a handler
+	// ui.Files has two subdirectories - "html" and "static". Any requests with the "/static"
+	// prefix now exists within the file server.
+	r.Handle("/static/*", fileServer)
 
 	// Application routes that use the Session Manager
 	// We use r.Group if not Chi will complain that we are declaring middleware
