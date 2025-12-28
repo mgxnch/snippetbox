@@ -18,6 +18,7 @@ type templateData struct {
 	Form            any    // holds validation errors
 	Flash           string // holds the flash message
 	IsAuthenticated bool   // true if user is authenticated, false otherwise
+	CSRFToken       string // holds the CSRF token
 }
 
 // functions acts as a lookup between the names of our custom template

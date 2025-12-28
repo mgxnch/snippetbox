@@ -1,6 +1,10 @@
 package main
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/justinas/nosurf"
+)
 
 // secureHeaders is a middleware that sets security-related headers
 // into the HTTP response in accordance with OWASP best practices.
@@ -19,6 +23,18 @@ func secureHeaders(next http.Handler) http.Handler {
 		// If you want code to execute on the way back up the chain,
 		// you include them after the next.ServeHTTP call
 	})
+}
+
+// noSurf is a middleware which uses a customised CSRF cookie with the
+// Secure, Path and HttpOnly attributes set.
+func noSurf(next http.Handler) http.Handler {
+	csrfHandler := nosurf.New(next)
+	csrfHandler.SetBaseCookie(http.Cookie{
+		HttpOnly: true,
+		Path:     "/",
+		Secure:   true,
+	})
+	return csrfHandler
 }
 
 // requireAuthentication is a middleware that checks if a user is allowed to

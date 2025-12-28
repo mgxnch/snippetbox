@@ -40,7 +40,7 @@ func (app *application) routes() http.Handler {
 	// components after routes. Chi only allows you to declare middleware BEFORE routes.
 	r.Group(func(r chi.Router) {
 		// Add the middleware for this group
-		r.Use(app.sessionManager.LoadAndSave)
+		r.Use(app.sessionManager.LoadAndSave, noSurf)
 
 		// Add the handlers for this group
 		r.Get("/", app.home)
