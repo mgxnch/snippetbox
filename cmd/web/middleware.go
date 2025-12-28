@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/justinas/nosurf"
@@ -51,6 +52,33 @@ func (app *application) requireAuthentication(next http.Handler) http.Handler {
 		w.Header().Add("Cache-Control", "no-store")
 
 		// Call next handler in the chain
+		next.ServeHTTP(w, r)
+	})
+}
+
+// authenticate is a middleware that checks if a userID exists within the context.
+// If a valid userID exists, the context is set with the isAuthenticatedContextKey
+// key with a value of true.
+func (app *application) authenticate(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		id := app.sessionManager.GetInt(r.Context(), authUserKey)
+		if id == 0 {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		// Check DB to see if userID exists
+		exists, err := app.users.Exists(id)
+		if err != nil {
+			app.serverError(w, err)
+			return
+		}
+
+		if exists {
+			ctx := context.WithValue(r.Context(), isAuthenticatedContextKey, true)
+			r = r.WithContext(ctx)
+		}
+
 		next.ServeHTTP(w, r)
 	})
 }

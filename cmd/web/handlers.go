@@ -13,10 +13,6 @@ import (
 	"github.com/mgxnch/snippetbox/internal/validator"
 )
 
-const (
-	authUserKey = "authenticatedUserID" // key used for an authenticated user in Session Manager
-)
-
 // userSignupForm holds the information when a user signs up.
 type userSignupForm struct {
 	Name                string `form:"name"`
